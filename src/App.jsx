@@ -1,18 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  LayoutDashboard, 
-  Library, 
-  FileUp, 
-  Loader2, 
-  CheckCircle, 
-  X, 
-  Search, 
-  Bell, 
-  User,
-  ShieldAlert,
-  Clock,
-  CheckCircle2,
-  TrendingUp
+  LayoutDashboard, Library, FileUp, Loader2, CheckCircle, X, 
+  Search, Bell, User, ShieldAlert, Clock, CheckCircle2, TrendingUp,
+  LogOut
 } from 'lucide-react';
 
 // --- Исходные данные ---
@@ -31,9 +21,9 @@ const INITIAL_DOCS = [
   { id: 3, name: "Contract_Turbine_Supplier_Draft.pdf", version: "0.9", date: "21.10.2025", status: "На ревью" },
 ];
 
-const AITU_PASSPORT_BASE_URL = "https://passport.test.supreme-team.tech";
-const AITU_ACCESS_TOKEN = "eyJ4NXQjUzI1NiI6IkNnOE90eGNyVFVjUmpLVjVYX1cteDJKelBoSklYYUJ4b1l6TEIwWXdld0kiLCJraWQiOiJiNDBlMGUwMC1jYTllLTRkNGEtODc4MS1iMDY4YzMwZWY2MjMiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiI0NTU1NzgiLCJhdWQiOiJiY2RjYWYzNS05MzE0LTRiM2UtOTUyZS1iMDQwMTY4Njg3MGUiLCJuYmYiOjE3NzE5MjY2NzcsInNjb3BlIjpbIm9wZW5pZCJdLCJpc3MiOiJodHRwczpcL1wvcGFzc3BvcnQudGVzdC5zdXByZW1lLXRlYW0udGVjaCIsImV4cCI6MTc3NDUxODY3NywiaWF0IjoxNzcxOTI2Njc3fQ.s7qfuI_Vpi5LLwsLIVuFL4HWUnfPwISj3NnhSu7tCkb3NOc6KZtHuxM1Sr7HAP-cg9Mq9PNfHi0yDTcgk7QOi-rhg-RoRXtdAg1IjISKOmwCo5kxmkU8RZsWAnf6uSd6ds5ocpZ7XSRtLn43UsxYgvcN2WmQDLMybPqaILWQZYiVq4OVVHJ75L2WJRqDvnbyo5j3YK8j_2ErasrakPLsFBlD1fWpG4rPwr2Hv-NB_F4vW28udjgeqGr0LSMoFh_ptoYzkEQCDKgozHjmNp5I2QNNvEiW9meSz4fqyrAkOP5V3xJxLpgLhAokqEvKcYjRINeHf870fnQIdYSQqTuI6A";
-
+const CLIENT_ID = "bcdcaf35-9314-4b3e-952e-b0401686870e";
+const REDIRECT_URI = window.location.origin + "/";
+const AITU_AUTH_URL = "https://passport.test.supreme-team.tech/oauth2/auth";
 // --- Вспомогательные компоненты ---
 
 const Badge = ({ children, variant = 'default' }) => {
@@ -50,21 +40,108 @@ const Badge = ({ children, variant = 'default' }) => {
   );
 };
 
+const LoginScreen = ({ onLogin }) => (
+  <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+    <div className="bg-white rounded-2xl shadow-2xl p-10 w-full max-w-md text-center">
+      <div className="w-16 h-16 rounded-xl bg-blue-600 flex items-center justify-center mx-auto mb-6 shadow-lg">
+        <ShieldAlert className="w-9 h-9 text-white" />
+      </div>
+      <h1 className="text-2xl font-bold text-slate-900 mb-2">Агентство РК по атомной энергии</h1>
+      <p className="text-slate-500 mb-8 text-sm">Информационная система управления проектами</p>
+      <button
+        onClick={onLogin}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-md hover:shadow-lg active:scale-[0.98]"
+      >
+        Войти через Aitu
+      </button>
+      <p className="text-xs text-slate-400 mt-4">Используется Aitu Passport для безопасной авторизации</p>
+    </div>
+  </div>
+);
+
 export default function App() {
   const [activeTab, setActiveTab] = useState('roadmap');
   const [documents, setDocuments] = useState(INITIAL_DOCS);
   const [isUploading, setIsUploading] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [accessToken, setAccessToken] = useState(null);
+  const [userInfo, setUserInfo] = useState(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(false);
+
+  useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("code");
+  const savedToken = localStorage.getItem("aitu_token");
+  if (code) {
+    exchangeCodeForToken(code);
+    window.history.replaceState({}, "", "/");
+  } else if (savedToken) {
+    setAccessToken(savedToken);
+  }
+}, []);
+
+useEffect(() => {
+  if (accessToken) fetchUserInfo(accessToken);
+}, [accessToken]);
+
+const exchangeCodeForToken = async (code) => {
+  setIsLoadingUser(true);
+  try {
+    const response = await fetch("/aitu/oauth2/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: REDIRECT_URI,
+        client_id: CLIENT_ID,
+        client_secret: "gvAawOy7VbI03jWzR1KTZSSldVxD89hz5JlbvKAW7AKTFbwmqg7fU6v97pG3OXsQ", // ← замени на реальный
+      }),
+    });
+    const data = await response.json();
+    if (data.access_token) {
+      localStorage.setItem("aitu_token", data.access_token);
+      setAccessToken(data.access_token);
+    }
+  } catch (err) {
+    console.error("Token exchange error:", err);
+  } finally {
+    setIsLoadingUser(false);
+  }
+};
+
+const fetchUserInfo = async (token) => {
+  try {
+    const response = await fetch("/aitu/userinfo", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (response.ok) {
+      const data = await response.json();
+      setUserInfo(data);
+    }
+  } catch (err) {
+    console.error("Userinfo error:", err);
+  }
+};
+
+const handleLogin = () => {
+  window.location.href = `${AITU_AUTH_URL}?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=openid&state=randomstate123`;
+};
+
+const handleLogout = () => {
+  localStorage.removeItem("aitu_token");
+  setAccessToken(null);
+  setUserInfo(null);
+};
 
   const handleUpload = async () => {
   setIsUploading(true);
 
   try {
-    // СТАЛО — запрос идёт через локальный прокси
     const response = await fetch(`/aitu/userinfo`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${AITU_ACCESS_TOKEN}`,
+        "Authorization": `Bearer ${accessToken}`,
         "Content-Type": "application/json",
       },
     });
@@ -74,10 +151,8 @@ export default function App() {
     } else {
       const userInfo = await response.json();
       console.log("Aitu /userinfo response:", userInfo);
-      // userInfo содержит: sub, phone_number, name и т.д.
     }
 
-    // Имитация добавления нового документа в реестр
     const newDoc = {
       id: Date.now(),
       name: "План заливки фундамента v2.pdf",
@@ -96,6 +171,20 @@ export default function App() {
     setIsUploading(false);
   }
 };
+if (isLoadingUser) {
+  return (
+    <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+      <div className="text-center text-white">
+        <Loader2 className="w-10 h-10 animate-spin mx-auto mb-4 text-blue-400" />
+        <p>Выполняется вход через Aitu...</p>
+      </div>
+    </div>
+  );
+}
+
+if (!accessToken) {
+  return <LoginScreen onLogin={handleLogin} />;
+}
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
@@ -166,11 +255,16 @@ export default function App() {
             <div className="h-6 w-px bg-slate-200"></div>
             <div className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-1.5 rounded-md transition-colors -m-1.5">
               <div className="text-right hidden md:block">
-                <p className="text-sm font-bold text-slate-900 leading-none">CEO</p>
-                <p className="text-xs text-slate-500 mt-1">Генеральный директор</p>
+                <p className="text-sm font-bold text-slate-900 leading-none">
+  {userInfo?.sub || "Пользователь"}
+</p>
+<p className="text-xs text-slate-500 mt-1">Aitu аккаунт</p>
               </div>
               <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center border border-slate-300 overflow-hidden">
                 <User className="w-5 h-5 text-slate-500" />
+                <button onClick={handleLogout} className="text-slate-400 hover:text-rose-500 transition-colors" title="Выйти">
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>
