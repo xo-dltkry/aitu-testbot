@@ -31,6 +31,9 @@ const INITIAL_DOCS = [
   { id: 3, name: "Contract_Turbine_Supplier_Draft.pdf", version: "0.9", date: "21.10.2025", status: "На ревью" },
 ];
 
+const AITU_PASSPORT_BASE_URL = "https://passport.test.supreme-team.tech";
+const AITU_ACCESS_TOKEN = "eyJ4NXQjUzI1NiI6IkNnOE90eGNyVFVjUmpLVjVYX1cteDJKelBoSklYYUJ4b1l6TEIwWXdld0kiLCJraWQiOiJiNDBlMGUwMC1jYTllLTRkNGEtODc4MS1iMDY4YzMwZWY2MjMiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiI0NTU1NzgiLCJhdWQiOiJiY2RjYWYzNS05MzE0LTRiM2UtOTUyZS1iMDQwMTY4Njg3MGUiLCJuYmYiOjE3NzE5MjY2NzcsInNjb3BlIjpbIm9wZW5pZCJdLCJpc3MiOiJodHRwczpcL1wvcGFzc3BvcnQudGVzdC5zdXByZW1lLXRlYW0udGVjaCIsImV4cCI6MTc3NDUxODY3NywiaWF0IjoxNzcxOTI2Njc3fQ.s7qfuI_Vpi5LLwsLIVuFL4HWUnfPwISj3NnhSu7tCkb3NOc6KZtHuxM1Sr7HAP-cg9Mq9PNfHi0yDTcgk7QOi-rhg-RoRXtdAg1IjISKOmwCo5kxmkU8RZsWAnf6uSd6ds5ocpZ7XSRtLn43UsxYgvcN2WmQDLMybPqaILWQZYiVq4OVVHJ75L2WJRqDvnbyo5j3YK8j_2ErasrakPLsFBlD1fWpG4rPwr2Hv-NB_F4vW28udjgeqGr0LSMoFh_ptoYzkEQCDKgozHjmNp5I2QNNvEiW9meSz4fqyrAkOP5V3xJxLpgLhAokqEvKcYjRINeHf870fnQIdYSQqTuI6A";
+
 // --- Вспомогательные компоненты ---
 
 const Badge = ({ children, variant = 'default' }) => {
@@ -53,29 +56,46 @@ export default function App() {
   const [isUploading, setIsUploading] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  // Логика загрузки документа
-  const handleUpload = () => {
-    setIsUploading(true);
-    
-    // Имитация задержки обработки и анализа ИИ (2 секунды)
-    setTimeout(() => {
-      setIsUploading(false);
-      
-      const newDoc = {
-        id: Date.now(),
-        name: "План заливки фундамента v2.pdf",
-        version: "2.0",
-        date: new Date().toLocaleDateString('ru-RU'),
-        status: "Требует согласования"
-      };
-      
-      setDocuments([newDoc, ...documents]);
-      setShowToast(true);
-      
-      // Автоматически скрываем уведомление через 6 секунд
-      setTimeout(() => setShowToast(false), 6000);
-    }, 2000);
-  };
+  const handleUpload = async () => {
+  setIsUploading(true);
+
+  try {
+    // СТАЛО — запрос идёт через локальный прокси
+    const response = await fetch(`/aitu/userinfo`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${AITU_ACCESS_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      console.error("Aitu API error:", response.status, response.statusText);
+    } else {
+      const userInfo = await response.json();
+      console.log("Aitu /userinfo response:", userInfo);
+      // userInfo содержит: sub, phone_number, name и т.д.
+    }
+
+    // Имитация добавления нового документа в реестр
+    const newDoc = {
+      id: Date.now(),
+      name: "План заливки фундамента v2.pdf",
+      version: "2.0",
+      date: new Date().toLocaleDateString("ru-RU"),
+      status: "Требует согласования",
+    };
+
+    setDocuments((prev) => [newDoc, ...prev]);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 6000);
+
+  } catch (error) {
+    console.error("Ошибка при вызове Aitu API:", error);
+  } finally {
+    setIsUploading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
