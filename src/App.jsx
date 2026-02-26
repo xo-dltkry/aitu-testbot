@@ -256,9 +256,9 @@ if (!accessToken) {
             <div className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-1.5 rounded-md transition-colors -m-1.5">
               <div className="text-right hidden md:block">
                 <p className="text-sm font-bold text-slate-900 leading-none">
-  {userInfo?.sub || "Пользователь"}
-</p>
-<p className="text-xs text-slate-500 mt-1">Aitu аккаунт</p>
+                {userInfo?.sub || "Пользователь"}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">Aitu аккаунт</p>
               </div>
               <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center border border-slate-300 overflow-hidden">
                 <User className="w-5 h-5 text-slate-500" />
