@@ -1,38 +1,49 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  LayoutDashboard, Library, FileUp, Loader2, CheckCircle, X, 
-  Search, Bell, User, ShieldAlert, Clock, CheckCircle2, TrendingUp,
-  LogOut
+import {
+  LayoutDashboard,
+  Library,
+  FileUp,
+  Loader2,
+  CheckCircle,
+  X,
+  Search,
+  Bell,
+  User,
+  ShieldAlert,
+  Clock,
+  CheckCircle2,
+  TrendingUp,
+  LogOut,
 } from 'lucide-react';
 
 // --- Исходные данные ---
 
 const INITIAL_TASKS = [
-  { id: 1, name: "Закуп турбинного оборудования", start: 1, duration: 3, status: "Done", progress: 100 },
-  { id: 2, name: "Проектирование систем охлаждения", start: 2, duration: 4, status: "Done", progress: 100 },
-  { id: 3, name: "Экскавация котлована реактора", start: 5, duration: 4, status: "In Progress", progress: 65 },
-  { id: 4, name: "Заливка фундамента Блока 1", start: 8, duration: 3, status: "Pending", progress: 0 },
-  { id: 5, name: "Монтаж защитной оболочки", start: 10, duration: 3, status: "Pending", progress: 0 },
+  { id: 1, name: 'Закуп турбинного оборудования', start: 1, duration: 3, status: 'Done', progress: 100 },
+  { id: 2, name: 'Проектирование систем охлаждения', start: 2, duration: 4, status: 'Done', progress: 100 },
+  { id: 3, name: 'Экскавация котлована реактора', start: 5, duration: 4, status: 'In Progress', progress: 65 },
+  { id: 4, name: 'Заливка фундамента Блока 1', start: 8, duration: 3, status: 'Pending', progress: 0 },
+  { id: 5, name: 'Монтаж защитной оболочки', start: 10, duration: 3, status: 'Pending', progress: 0 },
 ];
 
 const INITIAL_DOCS = [
-  { id: 1, name: "Tech_Spec_Block1.pdf", version: "1.2", date: "12.08.2025", status: "Утвержден" },
-  { id: 2, name: "Reactor_Safety_Guidelines.pdf", version: "3.0", date: "05.09.2025", status: "Утвержден" },
-  { id: 3, name: "Contract_Turbine_Supplier_Draft.pdf", version: "0.9", date: "21.10.2025", status: "На ревью" },
+  { id: 1, name: 'Tech_Spec_Block1.pdf', version: '1.2', date: '12.08.2025', status: 'Утвержден' },
+  { id: 2, name: 'Reactor_Safety_Guidelines.pdf', version: '3.0', date: '05.09.2025', status: 'Утвержден' },
+  { id: 3, name: 'Contract_Turbine_Supplier_Draft.pdf', version: '0.9', date: '21.10.2025', status: 'На ревью' },
 ];
 
-const CLIENT_ID = "bcdcaf35-9314-4b3e-952e-b0401686870e";
-const REDIRECT_URI = window.location.origin + "/";
-const AITU_AUTH_URL = "https://passport.test.supreme-team.tech/oauth2/auth";
+const CLIENT_ID = 'bcdcaf35-9314-4b3e-952e-b0401686870e';
+const REDIRECT_URI = window.location.origin + '/';
+const AITU_AUTH_URL = 'https://passport.test.supreme-team.tech/oauth2/auth';
 
 // --- Вспомогательные компоненты ---
 
 const Badge = ({ children, variant = 'default' }) => {
   const variants = {
-    default: "bg-gray-100 text-gray-800 border-gray-200",
-    success: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    warning: "bg-amber-50 text-amber-700 border-amber-200",
-    danger: "bg-rose-50 text-rose-700 border-rose-200",
+    default: 'bg-gray-100 text-gray-800 border-gray-200',
+    success: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    warning: 'bg-amber-50 text-amber-700 border-amber-200',
+    danger: 'bg-rose-50 text-rose-700 border-rose-200',
   };
   return (
     <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${variants[variant]}`}>
@@ -66,25 +77,26 @@ export default function App() {
   const [isUploading, setIsUploading] = useState(false);
   const [showToast, setShowToast] = useState(false);
 
-  // --- новое для модалки отчёта ---
+  // --- стейт для модалки отчёта ---
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
 
   const [accessToken, setAccessToken] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
-  const hasCode = new URLSearchParams(window.location.search).has("code");
+  const hasCode = new URLSearchParams(window.location.search).has('code');
   const [isLoadingUser, setIsLoadingUser] = useState(hasCode);
 
   const codeHandled = useRef(false);
 
+  // --- обработка кода из Aitu ---
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    const savedToken = localStorage.getItem("aitu_token");
+    const code = params.get('code');
+    const savedToken = localStorage.getItem('aitu_token');
 
     if (code && !codeHandled.current) {
       codeHandled.current = true;
-      window.history.replaceState({}, "", "/");
+      window.history.replaceState({}, '', '/');
       exchangeCodeForToken(code);
     } else if (savedToken) {
       setAccessToken(savedToken);
@@ -98,30 +110,32 @@ export default function App() {
   const exchangeCodeForToken = async (code) => {
     setIsLoadingUser(true);
     try {
-      const credentials = btoa(`${CLIENT_ID}:gvAawOy7VbI03jWzR1KTZSSldVxD89hz5JlbvKAW7AKTFbwmqg7fU6v97pG3OXsQ`);
+      const credentials = btoa(
+        `${CLIENT_ID}:gvAawOy7VbI03jWzR1KTZSSldVxD89hz5JlbvKAW7AKTFbwmqg7fU6v97pG3OXsQ`
+      );
 
-      const response = await fetch("/aitu/oauth2/token", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/x-www-form-urlencoded",
-          "Authorization": `Basic ${credentials}`,
+      const response = await fetch('/aitu/oauth2/token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `Basic ${credentials}`,
         },
         body: new URLSearchParams({
-          grant_type: "authorization_code",
+          grant_type: 'authorization_code',
           code,
           redirect_uri: REDIRECT_URI,
         }),
       });
 
       const data = await response.json();
-      console.log("Token response:", data);
+      console.log('Token response:', data);
 
       if (data.access_token) {
-        localStorage.setItem("aitu_token", data.access_token);
+        localStorage.setItem('aitu_token', data.access_token);
         setAccessToken(data.access_token);
       }
     } catch (err) {
-      console.error("Token exchange error:", err);
+      console.error('Token exchange error:', err);
     } finally {
       setIsLoadingUser(false);
     }
@@ -129,7 +143,7 @@ export default function App() {
 
   const fetchUserInfo = async (token) => {
     try {
-      const response = await fetch("/aitu/userinfo", {
+      const response = await fetch('/aitu/userinfo', {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.ok) {
@@ -137,7 +151,7 @@ export default function App() {
         setUserInfo(data);
       }
     } catch (err) {
-      console.error("Userinfo error:", err);
+      console.error('Userinfo error:', err);
     }
   };
 
@@ -148,76 +162,80 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("aitu_token");
+    localStorage.removeItem('aitu_token');
     setAccessToken(null);
     setUserInfo(null);
   };
 
+  // --- загрузка документа + фейковый вызов Aitu ---
   const handleUpload = async () => {
     setIsUploading(true);
 
     try {
       const response = await fetch(`/aitu/userinfo`, {
-        method: "GET",
+        method: 'GET',
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
         },
       });
 
       if (!response.ok) {
-        console.error("Aitu API error:", response.status, response.statusText);
+        console.error('Aitu API error:', response.status, response.statusText);
       } else {
-        const userInfo = await response.json();
-        console.log("Aitu /userinfo response:", userInfo);
+        const info = await response.json();
+        console.log('Aitu /userinfo response:', info);
       }
 
       const newDoc = {
         id: Date.now(),
-        name: "План заливки фундамента v2.pdf",
-        version: "2.0",
-        date: new Date().toLocaleDateString("ru-RU"),
-        status: "Требует согласования",
+        name: 'План заливки фундамента v2.pdf',
+        version: '2.0',
+        date: new Date().toLocaleDateString('ru-RU'),
+        status: 'Требует согласования',
       };
 
       setDocuments((prev) => [newDoc, ...prev]);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 6000);
     } catch (error) {
-      console.error("Ошибка при вызове Aitu API:", error);
+      console.error('Ошибка при вызове Aitu API:', error);
     } finally {
       setIsUploading(false);
     }
   };
 
-  // --- логика генерации отчёта и алёрта в Aitu ---
+  // --- генерация автоматического отчёта + mock Aitu payload ---
   const handleGenerateReport = () => {
     setIsGeneratingReport(true);
 
-    // Имитация сборки данных со всех модулей (3 секунды)
+    // имитация сборки данных (3 секунды)
     setTimeout(() => {
       setIsGeneratingReport(false);
       setShowReportModal(true);
 
-      // Оповещение руководства в Aitu о готовности отчета
-      fetch('https://messapi.btsdapps.net/bot/v1/updates', {
+      // фейковый запрос в Aitu бот (как в задании — просто payload)
+      fetch('https://example.com/aitu-report-mock', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // сюда на реальном проекте подставляется токен бота
-          'X-BOT-TOKEN': 'YOUR_AITU_BOT_TOKEN_HERE'
         },
         body: JSON.stringify({
-          chat_id: 'YOUR_PM_PHONE_OR_CHAT_ID',
-          type: 'Text',
-          content:
-            '📊 Сводный отчет для руководства успешно сформирован в системе ИСУП "Атом-Контроль". Отклонений по бюджету нет. Риск по срокам: Управляемый.'
-        })
+          type: 'AutomatedExecutiveReport',
+          payload: {
+            title: 'Сводный отчёт АЭС, блок 1',
+            kpiDeviation: '< 5%',
+            digitizedDocuments: '100%',
+            riskLevel: 'Контролируемый',
+          },
+        }),
       })
-        .then(() => console.log('Aitu report notification sent!'))
-        .catch(error => console.error('Aitu API Error:', error));
+        .then(() => console.log('Aitu report mock called'))
+        .catch((error) => console.error('Aitu mock error:', error));
     }, 3000);
   };
+
+  // --- экраны загрузки / логина ---
 
   if (isLoadingUser) {
     return (
@@ -234,16 +252,20 @@ export default function App() {
     return <LoginScreen onLogin={handleLogin} />;
   }
 
+  // --- основной UI ---
+
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
-      {/* Боковая панель (Sidebar) */}
+      {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-white flex flex-col shadow-xl z-20">
         <div className="p-6 flex items-center gap-3 border-b border-slate-800">
           <div className="w-8 h-8 rounded bg-blue-600 flex items-center justify-center flex-shrink-0 shadow-inner">
             <ShieldAlert className="w-5 h-5 text-white" />
           </div>
           <span className="font-bold text-sm tracking-wide leading-tight text-slate-100">
-            Агентство РК по<br />атомной энергии
+            Агентство РК по
+            <br />
+            атомной энергии
           </span>
         </div>
 
@@ -278,9 +300,9 @@ export default function App() {
         </div>
       </aside>
 
-      {/* Основной контент */}
+      {/* Main */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Шапка (Header) */}
+        {/* Header */}
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8 z-10 sticky top-0">
           <div className="flex items-center gap-4 w-96">
             <div className="relative w-full">
@@ -302,7 +324,7 @@ export default function App() {
             <div className="flex items-center gap-3 cursor-pointer hover:bg-slate-50 p-1.5 rounded-md transition-colors -m-1.5">
               <div className="text-right hidden md:block">
                 <p className="text-sm font-bold text-slate-900 leading-none">
-                  {userInfo?.sub || "Пользователь"}
+                  {userInfo?.sub || 'Пользователь'}
                 </p>
                 <p className="text-xs text-slate-500 mt-1">Aitu аккаунт</p>
               </div>
@@ -320,21 +342,23 @@ export default function App() {
           </div>
         </header>
 
-        {/* Рабочая область */}
+        {/* Content */}
         <div className="flex-1 overflow-auto p-8">
-          {/* Представление 1: Дорожная Карта */}
+          {/* Roadmap view */}
           {activeTab === 'roadmap' && (
             <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex justify-between items-end mb-8">
                 <div>
-                  <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Дорожная Карта Проекта</h1>
+                  <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+                    Дорожная Карта Проекта
+                  </h1>
                   <p className="text-slate-500 mt-1">
                     Строительство АЭС (Блок 1) - План-график выполнения работ
                   </p>
                 </div>
 
                 <div className="flex items-center">
-                  {/* KPI Карточка */}
+                  {/* KPI Card */}
                   <div className="bg-white px-5 py-3 rounded-xl border border-emerald-200 shadow-sm flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
                       <TrendingUp className="w-5 h-5 text-emerald-600" />
@@ -349,16 +373,15 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Кнопка генерации отчёта */}
+                  {/* Generate report button */}
                   <button
                     onClick={handleGenerateReport}
                     disabled={isGeneratingReport}
-                    className={`ml-4 flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all shadow-sm
-                      ${
-                        isGeneratingReport
-                          ? 'bg-slate-100 text-slate-500 border border-slate-200 cursor-not-allowed'
-                          : 'bg-slate-900 text-white hover:bg-slate-800 hover:shadow-md border border-transparent active:scale-[0.98]'
-                      }`}
+                    className={`ml-4 flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-all shadow-sm ${
+                      isGeneratingReport
+                        ? 'bg-slate-100 text-slate-500 border border-slate-200 cursor-not-allowed'
+                        : 'bg-slate-900 text-white hover:bg-slate-800 hover:shadow-md border border-transparent active:scale-[0.98]'
+                    }`}
                   >
                     {isGeneratingReport ? (
                       <>
@@ -376,7 +399,7 @@ export default function App() {
               </div>
 
               <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                {/* Заголовок Ганта (Месяцы) */}
+                {/* Months row */}
                 <div className="grid grid-cols-12 gap-px bg-slate-100 border-b border-slate-200 pl-64">
                   {['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'].map(
                     (month, i) => (
@@ -390,7 +413,7 @@ export default function App() {
                   )}
                 </div>
 
-                {/* Строки задач */}
+                {/* Tasks */}
                 <div className="divide-y divide-slate-100">
                   {INITIAL_TASKS.map((task) => {
                     const statusColors = {
@@ -406,7 +429,7 @@ export default function App() {
 
                     return (
                       <div key={task.id} className="flex group hover:bg-slate-50 transition-colors">
-                        {/* Информация о задаче (Левая колонка) */}
+                        {/* Left column */}
                         <div className="w-64 flex-shrink-0 p-4 bg-white border-r border-slate-100 flex flex-col justify-center">
                           <h3 className="text-sm font-semibold text-slate-800 leading-tight mb-2 group-hover:text-blue-600 transition-colors">
                             {task.name}
@@ -421,7 +444,7 @@ export default function App() {
                           </div>
                         </div>
 
-                        {/* Временная шкала (Правая колонка) */}
+                        {/* Timeline */}
                         <div className="flex-1 grid grid-cols-12 gap-px bg-slate-50 relative p-2">
                           <div className="absolute inset-0 grid grid-cols-12 gap-px pointer-events-none opacity-20">
                             {Array.from({ length: 12 }).map((_, i) => (
@@ -430,9 +453,7 @@ export default function App() {
                           </div>
 
                           <div
-                            style={{
-                              gridColumn: `${task.start} / span ${task.duration}`,
-                            }}
+                            style={{ gridColumn: `${task.start} / span ${task.duration}` }}
                             className={`h-8 rounded-md shadow-sm flex items-center px-3 relative z-10 transition-transform hover:-translate-y-0.5 ${statusColors[task.status]}`}
                           >
                             <span className="text-xs font-medium text-white/90 truncate drop-shadow-sm">
@@ -454,7 +475,7 @@ export default function App() {
             </div>
           )}
 
-          {/* Представление 2: База Знаний */}
+          {/* Knowledge base view */}
           {activeTab === 'knowledge' && (
             <div className="max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="flex justify-between items-end mb-8">
@@ -466,14 +487,11 @@ export default function App() {
                 <button
                   onClick={handleUpload}
                   disabled={isUploading}
-                  className={`
-                    flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm transition-all shadow-sm
-                    ${
-                      isUploading
-                        ? 'bg-slate-100 text-slate-500 border border-slate-200 cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md border border-transparent active:scale-[0.98]'
-                    }
-                  `}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm transition-all shadow-sm ${
+                    isUploading
+                      ? 'bg-slate-100 text-slate-500 border border-slate-200 cursor-not-allowed'
+                      : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md border border-transparent active:scale-[0.98]'
+                  }`}
                 >
                   {isUploading ? (
                     <>
@@ -565,7 +583,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Модальное окно: Сводный отчет (Executive Summary) */}
+      {/* Модальное окно сводного отчёта */}
       {showReportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white border border-slate-200 shadow-2xl rounded-2xl w-[600px] overflow-hidden flex flex-col">
@@ -613,11 +631,11 @@ export default function App() {
                   </li>
                   <li className="flex justify-between items-center p-2 rounded bg-slate-50">
                     <span>Скорость отчетности</span>
-                    <span className="font-semibold text-slate-900">5 минут (План)</span>
+                    <span className="font-semibold text-slate-900">5 минут (по регламенту)</span>
                   </li>
                   <li className="flex justify-between items-center p-2 rounded bg-slate-50">
-                    <span>Прозрачность (Оцифровано)</span>
-                    <Badge variant="default">100%</Badge>
+                    <span>Прозрачность (оцифровано)</span>
+                    <Badge variant="default">Документов оцифровано: 100%</Badge>
                   </li>
                 </ul>
               </div>
