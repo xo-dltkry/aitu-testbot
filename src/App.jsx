@@ -104,6 +104,7 @@ const exchangeCodeForToken = async (code) => {
       }),
     });
     const data = await response.json();
+    console.log("Token response:", data);
     if (data.access_token) {
       localStorage.setItem("aitu_token", data.access_token);
       setAccessToken(data.access_token);
