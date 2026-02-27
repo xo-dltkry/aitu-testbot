@@ -137,7 +137,7 @@ const fetchUserInfo = async (token) => {
 };
 
 const handleLogin = () => {
-  window.location.href = `${AITU_AUTH_URL}?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=openid&state=randomstate123`;
+  window.location.href = `${AITU_AUTH_URL}?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=openid&state=randomstate123&prompt=login`;
 };
 
 const handleLogout = () => {
