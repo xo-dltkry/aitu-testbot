@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   LayoutDashboard, Library, FileUp, Loader2, CheckCircle, X, 
   Search, Bell, User, ShieldAlert, Clock, CheckCircle2, TrendingUp,
@@ -66,15 +66,20 @@ export default function App() {
   const [showToast, setShowToast] = useState(false);
   const [accessToken, setAccessToken] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
-  const [isLoadingUser, setIsLoadingUser] = useState(false);
+  const hasCode = new URLSearchParams(window.location.search).has("code");
+  const [isLoadingUser, setIsLoadingUser] = useState(hasCode);  
+
+  const codeHandled = useRef(false);
 
   useEffect(() => {
   const params = new URLSearchParams(window.location.search);
   const code = params.get("code");
   const savedToken = localStorage.getItem("aitu_token");
-  if (code) {
-    exchangeCodeForToken(code);
+
+  if (code && !codeHandled.current) {
+    codeHandled.current = true;
     window.history.replaceState({}, "", "/");
+    exchangeCodeForToken(code);
   } else if (savedToken) {
     setAccessToken(savedToken);
   }
