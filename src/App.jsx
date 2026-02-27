@@ -92,19 +92,25 @@ useEffect(() => {
 const exchangeCodeForToken = async (code) => {
   setIsLoadingUser(true);
   try {
+    // Формируем Basic Auth заголовок
+    const credentials = btoa(`${CLIENT_ID}:gvAawOy7VbI03jWzR1KTZSSldVxD89hz5JlbvKAW7AKTFbwmqg7fU6v97pG3OXsQ`);
+
     const response = await fetch("/aitu/oauth2/token", {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      headers: { 
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": `Basic ${credentials}`, // ← вот это было missing
+      },
       body: new URLSearchParams({
         grant_type: "authorization_code",
         code,
         redirect_uri: REDIRECT_URI,
-        client_id: CLIENT_ID,
-        client_secret: "gvAawOy7VbI03jWzR1KTZSSldVxD89hz5JlbvKAW7AKTFbwmqg7fU6v97pG3OXsQ", // ← замени на реальный
       }),
     });
+
     const data = await response.json();
     console.log("Token response:", data);
+
     if (data.access_token) {
       localStorage.setItem("aitu_token", data.access_token);
       setAccessToken(data.access_token);
