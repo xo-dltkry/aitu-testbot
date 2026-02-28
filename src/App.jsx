@@ -172,7 +172,7 @@ export default function App() {
     setIsUploading(true);
 
     try {
-      const response = await fetch(`/aitu/userinfo`, {
+      const response = await fetch('/aitu/userinfo', {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -205,33 +205,32 @@ export default function App() {
     }
   };
 
-  // --- генерация автоматического отчёта + mock Aitu payload ---
+  // --- генерация автоматического отчёта + fetch в Aitu (Day 2) ---
   const handleGenerateReport = () => {
     setIsGeneratingReport(true);
 
-    // имитация сборки данных (3 секунды)
+    // 3-секундная "загрузка" перед показом модалки
     setTimeout(() => {
       setIsGeneratingReport(false);
       setShowReportModal(true);
 
-      // фейковый запрос в Aitu бот (как в задании — просто payload)
-      fetch('https://example.com/aitu-report-mock', {
+      // mock-вызов Aitu-бота: отправляем текст "отчёт готов"
+      fetch('https://messapi.btsdapps.net/bot/v1/updates', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          // В реальном проекте сюда кладут токен бота Aitu
+          'X-BOT-TOKEN': 'DEMO_BOT_TOKEN',
         },
         body: JSON.stringify({
-          type: 'AutomatedExecutiveReport',
-          payload: {
-            title: 'Сводный отчёт АЭС, блок 1',
-            kpiDeviation: '< 5%',
-            digitizedDocuments: '100%',
-            riskLevel: 'Контролируемый',
-          },
+          chat_id: 'PROJECT_MANAGER_CHAT_ID',
+          type: 'Text',
+          content:
+            '📊 ИСУП "Атом-Контроль": сводный отчёт по АЭС (Блок 1) готов. Отклонение от графика: < 5%, документы оцифрованы: 100%.',
         }),
       })
-        .then(() => console.log('Aitu report mock called'))
-        .catch((error) => console.error('Aitu mock error:', error));
+        .then(() => console.log('Aitu API: report notification sent (demo)'))
+        .catch((error) => console.error('Aitu API Error:', error));
     }, 3000);
   };
 
@@ -631,10 +630,10 @@ export default function App() {
                   </li>
                   <li className="flex justify-between items-center p-2 rounded bg-slate-50">
                     <span>Скорость отчетности</span>
-                    <span className="font-semibold text-slate-900">5 минут (по регламенту)</span>
+                    <span className="font-semibold text-slate-900">5 минут (План)</span>
                   </li>
                   <li className="flex justify-between items-center p-2 rounded bg-slate-50">
-                    <span>Прозрачность (оцифровано)</span>
+                    <span>Прозрачность (Оцифровано)</span>
                     <Badge variant="default">Документов оцифровано: 100%</Badge>
                   </li>
                 </ul>
