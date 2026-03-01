@@ -250,12 +250,12 @@ export default function App() {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-BOT-TOKEN': 'ТВОЙ_BOT_TOKEN' // ← получишь у организаторов
+      'X-BOT-TOKEN': 'BOT_TOKEN' // ← получишь у организаторов
     },
     body: JSON.stringify({
-      chat_id: 'ТВОЙ_PHONE_OR_CHAT_ID', // ← твой номер телефона
+      chat_id: 'PHONE_OR_CHAT_ID', // ← твой номер телефона
       type: 'Text',
-      content: '🚨 КРИТИЧЕСКИЙ ИНЦИДЕНТ: Зафиксирована задержка поставок. График "Заливки фундамента" и "Монтажа оболочки" автоматически смещен на 1 месяц. Отклонение от графика увеличено до 5%.'
+      content: 'CRITICAL INCIDENT: Supply delay detected. Tasks shifted by 1 month. Schedule deviation increased to 5%.'
     })
   })
   .then(() => {
