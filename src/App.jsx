@@ -457,6 +457,7 @@ if (isLoadingUser) {
                       Done: CheckCircle2,
                       'In Progress': Loader2,
                       Pending: Clock,
+                      'Delayed': ShieldAlert
                     }[task.status];
 
                     return (
