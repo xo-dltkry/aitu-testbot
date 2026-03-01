@@ -16,6 +16,14 @@ import {
   LogOut,
 } from 'lucide-react';
 
+const INITIAL_TASKS = [
+  { id: 1, name: "Закуп турбинного оборудования", start: 1, duration: 3, status: "Done", progress: 100 },
+  { id: 2, name: "Проектирование систем охлаждения", start: 2, duration: 4, status: "Done", progress: 100 },
+  { id: 3, name: "Экскавация котлована реактора", start: 5, duration: 4, status: "In Progress", progress: 65 },
+  { id: 4, name: "Заливка фундамента Блока 1", start: 8, duration: 3, status: "Pending", progress: 0 },
+  { id: 5, name: "Монтаж защитной оболочки", start: 10, duration: 3, status: "Pending", progress: 0 },
+];
+
 const INITIAL_DOCS = [
   { id: 1, name: 'Tech_Spec_Block1.pdf', version: '1.2', date: '12.08.2025', status: 'Утвержден' },
   { id: 2, name: 'Reactor_Safety_Guidelines.pdf', version: '3.0', date: '05.09.2025', status: 'Утвержден' },
