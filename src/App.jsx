@@ -246,7 +246,7 @@ export default function App() {
   setTasks(updatedTasks);
 
   // 2. Отправляем уведомление через Aitu Bot API
-  fetch('https://messapi.btsdapps.net/bot/v1/updates', { 
+  fetch('/botapi/bot/v1/updates', { 
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

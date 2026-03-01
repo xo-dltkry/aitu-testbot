@@ -3,6 +3,10 @@
     {
       "source": "/aitu/:path*",
       "destination": "https://passport.test.supreme-team.tech/:path*"
+    },
+    {
+      "source": "/botapi/:path*",
+      "destination": "https://messapi.btsdapps.net/:path*"
     }
   ]
 }
