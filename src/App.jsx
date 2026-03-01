@@ -16,16 +16,6 @@ import {
   LogOut,
 } from 'lucide-react';
 
-// --- Исходные данные ---
-
-const INITIAL_TASKS = [
-  { id: 1, name: 'Закуп турбинного оборудования', start: 1, duration: 3, status: 'Done', progress: 100 },
-  { id: 2, name: 'Проектирование систем охлаждения', start: 2, duration: 4, status: 'Done', progress: 100 },
-  { id: 3, name: 'Экскавация котлована реактора', start: 5, duration: 4, status: 'In Progress', progress: 65 },
-  { id: 4, name: 'Заливка фундамента Блока 1', start: 8, duration: 3, status: 'Pending', progress: 0 },
-  { id: 5, name: 'Монтаж защитной оболочки', start: 10, duration: 3, status: 'Pending', progress: 0 },
-];
-
 const INITIAL_DOCS = [
   { id: 1, name: 'Tech_Spec_Block1.pdf', version: '1.2', date: '12.08.2025', status: 'Утвержден' },
   { id: 2, name: 'Reactor_Safety_Guidelines.pdf', version: '3.0', date: '05.09.2025', status: 'Утвержден' },
@@ -85,6 +75,7 @@ export default function App() {
   const [userInfo, setUserInfo] = useState(null);
   const hasCode = new URLSearchParams(window.location.search).has('code');
   const [isLoadingUser, setIsLoadingUser] = useState(hasCode);
+  const [tasks, setTasks] = useState(INITIAL_TASKS);
 
   const codeHandled = useRef(false);
 
@@ -236,7 +227,38 @@ export default function App() {
 
   // --- экраны загрузки / логина ---
 
-  if (isLoadingUser) {
+  const simulateSupplyDelay = () => {
+  // 1. Сдвигаем задачи 4 и 5 на 1 месяц
+  const updatedTasks = tasks.map(task => {
+    if (task.id === 4 || task.id === 5) {
+      return { ...task, start: task.start + 1, status: 'Delayed' }; 
+    }
+    return task;
+  });
+  setTasks(updatedTasks);
+
+  // 2. Отправляем уведомление через Aitu Bot API
+  fetch('https://messapi.btsdapps.net/bot/v1/updates', { 
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-BOT-TOKEN': 'ТВОЙ_BOT_TOKEN' // ← получишь у организаторов
+    },
+    body: JSON.stringify({
+      chat_id: 'ТВОЙ_PHONE_OR_CHAT_ID', // ← твой номер телефона
+      type: 'Text',
+      content: '🚨 КРИТИЧЕСКИЙ ИНЦИДЕНТ: Зафиксирована задержка поставок. График "Заливки фундамента" и "Монтажа оболочки" автоматически смещен на 1 месяц. Отклонение от графика увеличено до 5%.'
+    })
+  })
+  .then(() => {
+    console.log('Aitu notification sent for schedule delay.');
+    setShowToast(true); // показываем toast
+    setTimeout(() => setShowToast(false), 6000);
+  })
+  .catch(error => console.error('Aitu API Error:', error));
+};
+
+if (isLoadingUser) {
     return (
       <div className="min-h-screen bg-slate-900 flex items-center justify-center">
         <div className="text-center text-white">
@@ -355,20 +377,22 @@ export default function App() {
                     Строительство АЭС (Блок 1) - План-график выполнения работ
                   </p>
                 </div>
-
-                <div className="flex items-center">
-                  {/* KPI Card */}
+                <div className='flex items-center gap-4'>
+                  {/* Красная кнопка */}
+                  <button
+                    onClick={simulateSupplyDelay}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-medium text-sm transition-all shadow-sm hover:shadow-md active:scale-[0.98]"
+                  >
+                    🚨 Simulate Supply Delay
+                  </button>
+                  {/* KPI Карточка */}
                   <div className="bg-white px-5 py-3 rounded-xl border border-emerald-200 shadow-sm flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
                       <TrendingUp className="w-5 h-5 text-emerald-600" />
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
-                        Predictive KPI
-                      </p>
-                      <p className="text-lg font-bold text-emerald-600">
-                        Отклонение от графика: 0%
-                      </p>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Predictive KPI</p>
+                      <p className="text-lg font-bold text-emerald-600">Отклонение от графика: 0%</p>
                     </div>
                   </div>
 
@@ -414,11 +438,12 @@ export default function App() {
 
                 {/* Tasks */}
                 <div className="divide-y divide-slate-100">
-                  {INITIAL_TASKS.map((task) => {
+                  {tasks.map((task) => {
                     const statusColors = {
                       Done: 'bg-emerald-500',
                       'In Progress': 'bg-blue-500',
-                      Pending: 'bg-slate-300',
+                      'Pending': 'bg-slate-300',
+                      'Delayed': 'bg-rose-500'
                     };
                     const StatusIcon = {
                       Done: CheckCircle2,
